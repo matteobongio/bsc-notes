@@ -10,8 +10,8 @@
 
   //TODO: fix diagram 
   #diagram( $
-    & & times.circle edge("rd") edge("ld") \
-    &plus.circle edge("rd") edge("ld") & & 3 \
+    & & times.o edge("rd") edge("ld") \
+    &plus.o edge("rd") edge("ld") & & 3 \
     1 & & 2
   $)
 
@@ -32,12 +32,12 @@
   If the _premise_ and _side-condition_ are met then the conclusion can be drawn, where premise consist of one, none, or
   more judgements and the side-condition is a single boolean predicate.
 
-  $ frac(,mono(n_0 times.circle n_1 -> n)) n = n_0 + n_1 $
+  $ frac(,mono(n_0 times.o n_1 -> n)) n = n_0 + n_1 $
 
   If $mono(n)$ is the sum of $mono(n_0)$ and $mono(n_1)$,
   then the expression can be replaced with $mono(n)$
 
-  $ frac(e_0 -> e_0^', e_0 times.circle e_1 -> e_0^' times.circle e_1) $
+  $ frac(e_0 -> e_0^', e_0 times.o e_1 -> e_0^' times.o e_1) $
 
   If $e_0$ can be furthur evaluated, then it can be replaced on the LHS with it's next evaluation step
   
@@ -60,7 +60,7 @@
 
   books uses $->>$, lecture uses $-->$
 
-  $ frac(e_0 --> mono(n_1) thin e_1 --> mono(n_2), e_0 plus.circle e_1 --> n) n = n_1 + n_2 $
+  $ frac(e_0 --> mono(n_1) thin e_1 --> mono(n_2), e_0 plus.o e_1 --> n) n = n_1 + n_2 $
 
   Small-step gives more control of the details and order of evaluation, it s more convenient
   when proving type soundess. Big-step can lead to simpler proofs.
@@ -79,7 +79,7 @@
   $
     cal(N)[|dot|] &: "Nums" -> NN \
     cal(E)[|dot|] &: "Exp" -> NN \
-    cal(E)[|e_0 plus.circle e_1|] &= cal(E)[|e_0|] + cal(E)[|e_1|]
+    cal(E)[|e_0 plus.o e_1|] &= cal(E)[|e_0|] + cal(E)[|e_1|]
   $
 
   *Compositional*: the meaning of complex expressions is defined in terms of the meaning of their components 
@@ -95,14 +95,14 @@
   $ sigma : X -> NN $
   sigma is the memory function
 
-  $angle.l e, sigma angle.r$ denotes the state where $e$ is to be evaluated in the memory $sigma$
+  $chevron.l e, sigma chevron.r$ denotes the state where $e$ is to be evaluated in the memory $sigma$
 
   $ 
-    frac( ,angle.l e \, sigma angle.r -> n) n = sigma(x) ("var") #h(14pt) && "small-step" \
-    frac( ,angle.l e \, sigma angle.r --> n) n = sigma(x) ("var") #h(14pt) && "big-step" \
+    frac( ,chevron.l e \, sigma chevron.r -> n) n = sigma(x) ("var") #h(14pt) && "small-step" \
+    frac( ,chevron.l e \, sigma chevron.r --> n) n = sigma(x) ("var") #h(14pt) && "big-step" \
     cal(E)[|dot|]: "Exp" -> ((X -> NN) -> NN) && "denotational" \
     cal(E)[|n|] sigma &= cal(N)[|n|] \
     cal(E)[|x|] sigma &= sigma(x) \
-    cal(E)[|e_0 plus.circle e_1|] sigma &= cal(E)[|e_0|] sigma + cal(E)[|e_1|] sigma 
+    cal(E)[|e_0 plus.o e_1|] sigma &= cal(E)[|e_0|] sigma + cal(E)[|e_1|] sigma 
   $
 ])
