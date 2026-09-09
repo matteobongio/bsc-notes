@@ -1,4 +1,4 @@
-#import "@preview/showybox:2.0.1": showybox
+#import "@preview/showybox:2.0.4": showybox
 #import "@preview/cetz:0.2.2"
 #import "@preview/pinit:0.2.0": *
 
