@@ -1,0 +1,49 @@
+name: Compile Typst and Attach to Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Typst
+        uses: typst-community/setup-typst@v2
+
+      - name: Compile Typst Document
+        run: |
+          typst compile Advanced-Algorithms.typ Advanced-Algorithms.pdf
+          typst compile Basic-approaches-semantics-computation/main.typ Basic-approaches-semantics-computation.pdf
+          typst compile Calculus-2/main.typ Calculus-2.pdf
+          typst compile Calculus-2-2/main.typ Calculus-2-2.pdf
+          typst compile IML/main.typ IML.pdf
+          typst compile Information-Retrieval/main.typ Information-Retrieval.pdf
+          typst compile OS/main.typ OS.pdf
+          typst compile Signals-and-Systems/main.typ Signals-and-Systems.pdf
+          typst compile comp-graph-viz/main.typ comp-graph-viz.pdf
+          typst compile languages-machines/main.typ languages-machines.pdf
+          typst compile stats/main.typ stats.pdf
+      - name: Upload PDF to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            Advanced-Algorithms.pdf
+            Basic-approaches-semantics-computation.pdf
+            Calculus-2.pdf
+            Calculus-2-2.pdf
+            IML.pdf
+            Information-Retrieval.pdf
+            OS.pdf
+            Signals-and-Systems.pdf
+            comp-graph-viz.pdf
+            languages-machines.pdf
+            stats.pdf
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
