@@ -1,8 +1,8 @@
 name: Compile Typst and Attach to Release
 
 on:
-  release:
-    types: [published]
+  push:
+    branches: [ "master" ]
 
 permissions:
   contents: write
