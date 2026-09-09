@@ -1,5 +1,6 @@
 #import "@preview/showybox:2.0.4": showybox
-#import "@preview/cetz:0.2.2"
+#import "@preview/cetz:0.5.2"
+#import "@preview/cetz-plot:0.1.4": plot
 #import "@preview/pinit:0.2.0": *
 
 #let bluebox(title, text, ..opts) = {
@@ -171,7 +172,6 @@ $
 
   Whatever point $(x_0, y_0)$ we have, there will be an integral curve passing through it.
   #cetz.canvas({
-    import cetz.plot
     plot.plot(size: (2, 2), axis-style: none, {
       plot.add(domain: (0, 2*calc.pi), (x) => x)
       plot.add(domain: (0, 2*calc.pi), (x) => x + 1)
@@ -216,14 +216,13 @@ $
       A attach(\, , t: eq.not) B\, ... in RR supset.eq [a, b],
       y(A) = Y_A \, y(B) = Y_B \, ...
     ),
-    "It can be that"&\
-    &y'(A) = Y_A^((1))\
-    &y'(B) = Y_B^((1)) \
+    "It can be that"&,
+    &y'(A) = Y_A^((1)),
+    &y'(B) = Y_B^((1)),
     &dots.v
    )
   $
   #cetz.canvas({
-    import cetz.plot
     plot.plot(size: (2, 2), x-min: 0, y-min:0, axis-style: "school-book",
     x-ticks: ((3.2, [a]), (4, [b])), 
     x-tick-step: none, 
@@ -293,7 +292,6 @@ $
     $
     Kinda TODO: improve
     #cetz.canvas({
-      import cetz.plot
       plot.plot(size: (2, 2), axis-style: "school-book",
       x-tick-step: none, 
       y-tick-step: none,
@@ -316,9 +314,9 @@ $
 #TheoremBox("Cauchy-Koualeska", [
   If RHS of $f(x, y)$ is constant at $forall x,y in D subset.eq circle_(x y)$ and is the dependence
   if $f$ on $y$ is good (e.g. $exists$ continous 
-  $frac(diff y, diff x) => forall$ inner points $(x_0, y_0) in D$,
+  $frac(partial y, partial x) => forall$ inner points $(x_0, y_0) in D$,
   $exists$ a unique $y = y(x; x_0, y_0))$ of ${y'f(x, y), y(x_0) = y_0}$ for $x$ near $x_0$.
-  Moreover, this integer curve does extend up to the boundry $diff D$.
+  Moreover, this integer curve does extend up to the boundry $partial D$.
 ])
 
 #table(columns: (auto, auto, auto, auto, auto),
