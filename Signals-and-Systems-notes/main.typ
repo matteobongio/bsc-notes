@@ -1,0 +1,624 @@
+#import "lib.typ": *
+
+#outline(target: figure)
+
+= Signals and Systems
+
+== Learning Outcomes
++ Mathematically analyse continuous-time signals;
++ Mathematically analyse and practically implement linear filters;
++ Implement and use (fast) Fourier transforms for 1D and 2D signal processing;
++ Do frequency-domain analysis on signals via Fourier transforms.
++ Pattern Matching on 1D and 2D
+
+== Lecture 1
+#bluebox("What is a continuous signal?", [
+  - A mathematical function of time, $x(t)$
+  - deflection versus time (amplitude is maximum deflection)
+])
+
+#Notationbox([
+  () analogue, [] digital
+])
+
+#Definitionbox("Sinusoidal Signal", [
+  always use $cos$ instead of $sin$ ($phi -= pi/2$)
+
+  $ x(t) = A cos(2 pi omega t + phi) = Re(A e^(i phi) e^(i omega t)) $
+
+  Radian Frequency: $omega$ radians
+
+  Cyclic Frequencey: $f = omega / (2pi)$
+
+  Period: $T = 1 / f$
+
+  Amplitude $A$
+
+  phase $phi$
+
+  *Plotting from Formula*: 
+  - determine the _period_ : $T = 2pi / omega$
+  - determine the _peak_ : $(omega t + phi) = 0$
+  - _Zero crossing_ : peak $plus.minus T/4$
+
+  *Time Shift*:
+
+  phase represents _time-shift_
+
+  $ phi = - omega t_m $
+
+  *Formula from Plot*
+  - *Measure* height of positive peak: $A$
+  - *Measure* the period: $T$
+    - *Compute* Frequency: $omega = (2 pi) / T$
+  - *Measure* time of the peak: $t_m$
+    - *compute* phase: $phi = - omega t_m$
+  
+  *Phase is Ambiguous*
+])
+
+#Examplebox([
+  Sol (440Hz)
+  $ x(t) = A cos(2 pi (440)t + phi) $
+])
+
+
+#Definitionbox("Frequency", [
+  $ f = 1 / T $
+  $T$ is the time for 1 oscilation
+])
+
+#Definitionbox("fourirer analysis", [
+  breaking a signal into a sum of sinosoids, can be done for all signals
+])
+
+#pinkbox("Speech signals", [
+  nearly periodic signals in vowels
+])
+
+Common values
+= TODO: study values of sin and cos
+
+= TODO: finish this
+$
+  sin(k pi) &= 0 \
+  sin((2k + 1/2) pi) &= 1 \
+  sin((2k + 3/2) pi) &= -1 \
+  cos((k + 1/2) pi) &= 0 \
+  cos(2 k pi) &= 1 \
+  cos((2 k + 1) pi) &= -1 
+$
+
+#redbox("IMPORTANT", [
+  When going from polar to cartesion complext numbers use `atan2()`
+])
+
+#purplebox("Complex Number Identities", [
+  $
+    Re {z} &= frac(z + overline(z), 2) \ 
+    Im {z} &= frac(z - overline(z), 2 i) \ 
+    |z| &= sqrt(z overline(z))
+  $
+])
+
+#bluebox("Polar to Cartesion forms", [
+  $
+      r &= sqrt(x^2 + y^2) \
+      theta &= arctan(y/x) \
+      x &= r cos theta \ 
+      y &= r sin theta \ 
+  $
+])
+
+#yellowbox("Eulers formula", [
+  $ 
+    r e^(i theta) = r cos theta + i r sin theta \
+    cos theta = frac(e^(i theta) + e^(- i theta), 2) \
+    sin theta = frac(e^(i theta) - e^(- i theta), 2i) \
+  $
+])
+
+*DeMoivre's Law*: $root(N, z) = e^(i 2 pi k/N) quad k=0, 1, 2, ..., N- 1$
+
+sum of two sinosoids of the same frequency,
+the result always has that frequency, but different amplitude and phase
+
+= Lecture 2
+
+== Phasor Addition Rule with same frequency
+
+$
+  x(t) &= sum_(k = 1)^N A_k cos(omega_0 t + phi_k) \
+  &= A cos(omega_0 t + phi) \
+
+  &sum_(k = 1)^N A_k e^(i phi k) = A e^(i phi)
+$
+
+#Examplebox("Phasor Addition", [
+  $
+    x_1(t) &= 5 cos(2 pi (100) t + pi/3) = Re{5 e^(i pi/3) e^(i 2 pi (100) t)} \
+    x_2(t) &= 4 cos(2 pi (100) t + pi/4) = Re{4 e^(-i pi / 4) e^(i 2 pi (100) t)} \
+    x_1(t) + x_2(t) &=  Re{e^(i 2 pi (100) t) (5 e^(i pi/3) + 4 e^(-i pi / 4))} \
+    5e^(i pi / 3) &= 5 cos(pi/3) + i 5 sin(pi/3) = 5(1/2 + i 1/2 sqrt(3)) \
+    4 e^(-i pi / 4) &= 4 cos(-pi/4) + i 4 sin(-pi/4) = 4(sqrt(2)/2 - i sqrt(2)/2) \
+    5 e^(i pi/3) + 4 e^(-i pi / 4) &= 5(1/2 + i 1/2 sqrt(3)) + 4(sqrt(2)/2 - i sqrt(2)/2) \
+    &approx 5.3284 + i 1.5017 \
+    A &= sqrt(5.3284^2 + 1.5017^2) approx 5.5 \
+    phi &= arctan(1.5017/5.3284) approx 0.3 \
+    x_1(t) + x_2(t) &= Re{5.5e^(i 0.3) e^i(2 pi (100) t)} \
+    &= 5.5 cos(2 pi (100) t + 0.3)
+  $
+])
+
+
+#Definitionbox("Harmonic Frequencies", [
+  $ f_k = k dot f_0 $
+  - frequencies that are integer mulitples of some fundamental frequency
+  - $f_k$ is called the $k^(t h)$ harmonic of $f_0$
+  - fundamental frequency is the GCD of all the frequencies
+])
+
+== Spectrum Interpretation
+
+cosine is the sum of 2 complex exponentials, one term witha apositive frequency, the other with a negative,
+the magnitude of each component is half the amplitude.
+
+$
+  cos theta = frac(e^(i theta) + e^(- i theta), 2)
+$
+
+#Examplebox("Spectrum to Sinusoid", [
+  #table(columns: 3,
+    [Frequency], [Amplitude], [Phase], 
+    [-250 Hz], [4], [$- pi / 2$],
+    [-100 Hz], [7], [$- pi / 3$],
+    [0 Hz], [10], [0],
+    [100], [7], [$- pi / 3$],
+    [250 Hz], [4], [$- pi / 2$],
+  )
+
+  $
+    x(t) &= 10 + 7 e^(-i pi/3) e^(i 2 pi (100) t) 
+    + 7 e^(e^(i pi/3)) e^(-i 2 pi (100) t)
+    + 4e^(i pi/2) e^(i 2 pi (250) t) + 4 e^(i pi/2) e^(-i 2 pi (250) t) \
+    &= 10 + 14 cos(2 pi (100) t - pi/3) + 8 cos(2 pi (250)t + pi / 2)
+  $
+  *DC* is the name of the 0 frequency component, alsways has $phi = 0$ (or $phi = pi$ if the value is negative)
+])
+
+
+#Definitionbox("Fourier Series", [
+  #Notationbox([
+    $
+      a_K = cases(
+        1/2 X &"for" k > 0,
+        X_0  &"for" k = 0,
+        1/2 X_K^* &"for" k < 0,
+      ) \
+      f_(-k) = - f_k "for" k>0
+    $
+  ])
+
+  $
+    x(t) = sum_(k = -N)^N a_k e^(i 2 pi f_k t)
+  $
+
+  *for harmonic signal*
+  $
+    x(t) = sum_(k = -infinity)^infinity a_k e^(i 2 pi k f_0 t)
+  $
+])
+
+
+#redbox([Orthogonalitry of $e$], [
+  $
+    integral_0^T_0 e^(i(2pi/T_0)k t) e^(-i(2 pi / T_0) ell t) d t = cases(0 quad &k != ell, T_0 &k = ell)
+  $
+])
+
+
+#Examplebox([
+  $
+    x(t) &= sin^3(3 pi t) \
+      &= (frac(e^(i 3 pi t) - e^(-i 3 pi t), 2 i))^2 \
+      &= i/8 e^(i 9 pi t) + (-3 i)/8 e^(i 3 pi t) + (3 i)/8 e^(-i 3 pi t) + (-i)/8 e^(-i 9 pi t)\
+  $
+])
+
+#Definitionbox("Gibbs' Phenomenon", [
+  At Discontinuities, there is always an overshoot in the fourier analysis
+])
+
+= Lecture 3
+
+#Definitionbox("Beat Notes/Amplitude Modulation", [
+  Amplitude changes over time
+
+  $ c(t) = v(t) cos(2 pi f_c t) $
+
+  *Beat Notes*: product of 2 sinusoids
+  $
+    x(t) = cos(2 pi f_1 t) + cos(2 pi f_2 t) = 2 cos(2 pi f_c t) cos(2 pi f_Delta t)
+  $
+  - $f_c$: $frac(f_1 + f_2, 2)$
+  - $f_Delta$: $frac(f_1 - f_2, 2)$
+])
+
+#Definitionbox("Chirps/Frequency Modulation", [
+  Frequency changes over time
+
+  $ x(t) = cos(2 pi f_0 t + v(t) + phi) $
+
+  *Chirps*: Quadratic angle function, linear instantaneous frequency
+  $ c(t) = A cos(alpha t^2 + 2 pi f_0 t + phi) $
+  - Frequency changes linearly over time
+  - _instantaneous frequency_: derivative
+    $ x (t) + A cos(Psi(t)) => omega_i(t) = d/(d t) Psi(t) $
+])
+
+#Definitionbox("Sampling", [
+  - aliasing
+    - folding
+  - spectrum for digitial signals
+
+  *Uniform Sampling*:
+    - Sampling Time Interval $T_s$: time between two samples
+    - Samplig Rate $f_s = 1/T_s$
+    
+  Uniform Sampling at $t = n dot T_s = n/f_s$
+
+  $x[n] = x(n dot T_s) = x(n / f_s)$
+])
+
+#Examplebox([
+  *Audio CD*:
+
+  CD rate is 44 100 samples per secound, 16-bit samples, 2 channels (stereo)
+  $ 2 times (16/8) times 60 times 44100 = 10.584 "MB per minute" $
+])
+
+== Discrete-Time Sinusoid
+- A-D conversion:
+  $ 
+  x[n] = A cos(hat(omega) n + phi) \
+  hat(omega) = omega T_s = omega/f_s = (2 pi f)/f_s
+  $
+  - $hat(omega)$ varies from $0$ to $2 pi$, as $f$ varies from $0$ to the sampling frequency
+  - Units: radians
+
+#Definitionbox("Aliasing", [
+  - Different Frequencies may yield the same $hat(omega)$
+  $
+    x(t) = A cos(2 pi (f + ell f_s) t + phi)\
+    hat(omega) = omega T_s + (2 pi f)/f_s plus.minus 2 pi ell
+  $
+  *principal alias*: $ell = 0$
+
+  - Adding or Subtracting integer multiples of $f_s$ to the frequency yields that same $x[n]$
+
+  - negative frequencies are also affected, but their phase becomes negative:
+  $
+    x(t) &= A cos(2 pi (-f + ell f_s) t + phi) \
+    => x[n] &= A(hat(omega) n - phi)
+  $
+
+  - *Folding*: a type of aliasing
+  $
+    f_s = 1000 \
+    cos(2 pi (100) t) &-> cos[2 pi (0.1) n]\
+    cos(2 pi (1100) t) &-> cos[2 pi (0.1) n]\
+    cos(2 pi (900) t) &-> cos[2 pi (0.1) n]
+  $
+    - folding frequency = $1/2 f_s$
+])
+
+- D-A reconstruction:
+  $y[n] -> y(t)$: replace $n$ with $f_s t$
+
+  ambiguous due to aliasing, we choose the signal with the lowest frequency
+  
+  - Stair-step approximation: for every sample, make a constant function, with the sample time in the middle
+  - Interpolation: for every sample draw a line until the next sample
+  - Sinc: optimal pulse: $p(t) = frac(sin (pi t)/T_s, (pi t)/T_s), p(0)=1$
+
+
+#TheoremBox("Shannon Sampling Theorem", [
+  $ "Sampling Rate" > 2 ("Highest Frequency Component") $
+
+  also called _Nyquist Rate_
+
+  This only works for bandlimited signals, so not the square wave, as it is an infinite sum
+])
+
+= Lecture 4
+
+#Definitionbox("Fir Filters", [
+  - linearity
+  - time-invatiance
+])
+
+#pinkbox("Pointwise operators", [
+  - Inverting $255 - x[n]$
+  - Squaring $(x[n])^2$
+  - Scaling $a times x[n]$
+  - Thresholding $(x[n] < T ? 0 : 1)$
+])
+
+#yellowbox("Causality", [
+  - The cause does not precede the correspoinding effect
+  - no output prior to input
+])
+
+#purplebox("3-pt average system", [
+  $ y[n] = 1/3 (x[n] + x[n+1] + x[n + 2]) $
+
+  *Causal 3-pt averager*
+  $ y[n] = 1/3 (x[n] + x[n - 1] + x[n - 2]) $
+])
+
+#Definitionbox("General Fir Filters", [
+  $ y[n] = sum_(k = 0)^M b_k dot x[n - k] $
+
+  - Filter _order_ is $M$
+  - Filter _Length_ is $L = M + 1$
+
+  #Examplebox([
+    $
+    b = {3, -1, 2, 1} \
+    => 3x[n] - x[n - 1] + 2x[n - 2] + x[n - 3]
+    $
+  ])
+
+  - Slide a window across $x[n]$
+])
+
+#Definitionbox([Unit Impulse Signal $delta[n]$], [
+  $
+    delta[n] = cases(1 quad &n=0, 0 &n != 0)
+  $
+
+  - $x[n]$ can be written as a sum of shifted impulses
+  - you can use the impulse signal to deduce filter coefficients
+])
+
+#Definitionbox("Convolution", [
+  $ y[n] = sum_(k = 0)^M h[k] x[n - k] $
+  #Notationbox([
+    $ y[n] = h[n] * x[n] $
+  ])
+])
+
+#purplebox("First Difference", [
+  $ y[n] = x[n] - x[n - 1] $
+
+  basically differentiation
+])
+
+#Definitionbox("Time-Invariant System", [
+  time shifting the input will case the same time-shift in the output.
+
+  time origin is picked arbitrarily
+])
+
+#Definitionbox("Linear System", [
+  - Scaling:
+    scaling the input will scale the output by the same factor
+  - Superposition:
+    adding two inputs gives an output that is the sum of the individual outputs
+])
+
+#Definitionbox("LTI: Linear and Time-Invariant", [
+  Completely Characterized by:
+  - Inpuse response
+  - Convolution
+  
+  *Cascade Systems*:
+  can be rearranged
+])
+
+#redbox("Properties of Convolution", [
+  $ (f * g)[d] = sum_(n = - infinity)^infinity f[n] g[d - n] $
+  - Commutativity: $f * g = g * f$
+  - Associativity: $(f * g) * h = f * (g * h)$
+  - Assoc. scalar mul: $a(f * g) (a f) * g = f * (a g)$
+  - Distributivity:
+  - Identity element: $f * delta = delta * f = f$
+])
+
+#Definitionbox("Correlation", [
+  convolution where the filter is flipped (H and V) before being applied
+
+  #Notationbox([
+    $ G = H times.circle F $
+  ])
+
+  when the filter is symmetric, correlation = convolution
+])
+
+= Lecture 5: Discrete Fourier Transform
+
+== Polynomial Multiplication
+- Coefficient representation: multiplication $O(n^2)$
+- Point-value representation: multiplication $O(n)$
+
+== Evaluation/Interpolation
+
+#Definitionbox("VanderMonde Matrix", [
+  $
+    V(x_0, ..., x_(n - 1)) = mat(
+      1, x_0, x_0^2, ..., x_0^(n-1);
+      1, x_1, x_1^2, ..., x_1^(n-1);
+      1, x_2, x_2^2, ..., x_2^(n-1);
+      dots.v, dots.v, dots.v, dots.down,  dots.v;
+      1, x_(n - 1), x_(n - 1)^2, ..., x_(n - 1)^(n-1);
+    )
+  $
+  always invertable since $x_i != x_j, forall i, j$
+])
+
+$
+  V(x_0, ..., x_(n - 1)) vec(a_0, dots.v, a_(n-1)) = vec(y_0, dots.v, y_(n - 1)) \
+  vec(a_0, dots.v, a_(n - 1)) = V^(-1) (x_0, ..., x_(n - 1)) vec(y_0, dots.v, y_(n - 1))
+$
+
+=== Evaluation (even n)
+$
+  A(x) &= sum_(n = 0)^(n - 1) a_n x_n 
+       = sum_(n = 0)^(n/2 -1) (a_(2 n) x^(2 n) + a_(2 n + 1) x^(2 n + 1)) \
+       &= sum_(n = 0)^(n/2 -1) a_(2 n) (x^2)^n + x sum_(n = 0)^(n/2 -1) a_(2 n + 1) (x^2)^n \
+       &= A_0 (x^2) + x A_1(x^2)
+$
+Where
+$
+  A_0(x) &= sum_(n = 0)^(n/2 -1) a_(2 n) x^n\
+  A_1(x) &= sum_(n = 0)^(n/2 -1) a_(2 n + 1) x^n
+$
+
+So evaluating $A(x)$ at $x_0, x_1, ..., x_(n - 1)$ reduces to evaluating the degree bound 
+$n/2$ polynomials $A_0(x)$ and $A_1(x)$ at $x_0^2, x_1^2, ..., x_(n - 1)^2$ then combining the 
+results
+
+*Choose smart points for point-value representation*:
+if $x_i^2 = x_j^2$ then we can evaluate at fewer positions
+
+
+#Definitionbox("Primitive Roots of Unity", [
+  $omega$ is a _Primitive Root of Unity_ if $omega^N = 1, N>1 and omega^0 = 1$
+  and $omega^1, ..., omega^(n - 1)$ are all distinct
+  - Real: -1
+  - Complex: $e^(i 2 pi / N)$
+  - multiplicative groups modulo $N + 1$
+
+  #set list(marker: ">")
+  - *inverse property*: $omega^(-1) = omega^(N - 1)$
+  - *reduction property*: $omega^(2 N) = 1 => (omega^2)^n = 1$
+
+    $1, omega^1, ..., omega^(n - 1)$ are all distinct, so are
+    $1, (omega^2)^1, ..., (omega^2)^(n - 1)$
+  - *cancellation property*: for non-zero $k: -N < k < N, sum_(j = 0)^(N - 1) omega^(k j) = 0$
+  - *reflective property*: if $N$ is even, then $omega^(N/2) = -1$
+
+      $omega^(k + N/2) = (omega^k)^2$
+])
+
+
+$
+  x_0^2 &= (omega_N^(N/2-1))^2 = omega_(N/2)^(N/2-1)\
+  x_(N/2)^2 &= x_(N/2-1)
+$
+
+== Discrete Fourier Transform
+
+to evaluate A at the values $1, omega, omega^2, ..., omega^(N - 1)$
+
+produces $(y_0, y_1, ..., y_(N-1))$ where $y_k = A(omega^k)$
+
+$ y_k = sum_(n = 0)^(N - 1) a_n omega_N^(n k) = sum_(n = 0)^(N - 1) a_n e^(i 2 pi n k / N)  $
+
+Matrix Form $y = F a$ where $F[i,j] = omega^(i j)$
+
+== Inverse Fourier Transform
+
+$ a_k = 1/N sum_(n = 0)^(N - 1) y_n omega_N^(- n k) = 1/N sum_(n = 0)^(N - 1) y_n e^(-i 2 pi n k/N) $
+
+
+#bluebox("", [
+  For any two vectors $a, b$ of length $N = 2^k$ their convolution is given by
+  $ a * b = "DFT"_(2 N)^(- 1) ("DFT"_(2 N) (a') "DFT"_(2 N)(b')) $
+  where $a'$ and $b'$ are zero-padded versions of length $2 N$
+])
+
+#TheoremBox("Convolution Theorem", [
+  For any two vectors $a, b$ of length $N=2^k$
+  the DFT of their convolution is given by the pairwise
+  multiplication of their DFTs
+  $ "DFT"(a * b) = "DFT"_(2 N)("DFT"_(2 N) (a') "DFT"_(2 N)(b')) $
+  where $a'$ and $b'$ are zero-padded versions of length $2 N$
+])
+
+= Lecture 6: Frequency Response of FIR Filters
+
+Fir filters change the amplitude and phase, but they keep the same frequencies
+
+The amplitude and phase change is call the _frequency response_
+
+
+For each frequency:
+$
+  H(e^(i hat(omega))) = sum_(k = 0)^M b_k e^(-i hat(omega) k)
+$
+
+We assume $x[n]$ has an infinite domain:
+$
+  y[n] = H(e^(i hat(omega))) X e^(i hat(omega) n)\
+  x[n] = X e^(i hat(omega) n) u[n] = cases(
+    X e^(i hat(omega) n) thick &0 <= n,
+    0 &n <0
+  )\
+$
+where $X = A e^(i phi)$
+$
+  y[n] = sum_(k = 0)^M b_k  X e^(i hat(omega)(n - k)) u[n-k]
+$
+
+for steady state: $y[n] = H(e^(i hat(omega))) x[n]$
+
+frequency response is complex-valued
+
+polar form:
+
+$
+  H(e^(i hat(omega))) = |H(e^(i hat(omega)))| e^(i angle H(e^(i hat(omega)))) \
+  y[n] = |H(e^(i hat(omega)))| A e^(i ( angle H(e^(i hat(omega))) + phi)) e^(i hat(omega) n) \
+$
+
+Gain: $|H(e^(i hat(omega)))|$
+
+
+#Examplebox([
+  $
+    {b_k} &= {1,2,1} \
+    H(e^(i hat(omega))) &= sum_(k = 0)^M b_k e^(- i hat(omega) k) \
+    H(e^(i hat(omega))) &= 1 + 2 e^(- i hat(omega)) + e^(- i 2 hat(omega)) \
+    &= e^(- i hat(omega)) (2 + 2 cos hat(omega))
+  $
+  since $(2 + 2 cos hat(omega)) >= 0$, the gain is $(2 + 2 cos hat(omega))$, the phase change is
+  $-hat(omega)$
+])
+
+*Cascade*: $H(e^(i hat(omega))) = H_1(e^(i hat(omega))) H_2(e^(i hat(omega)))$
+
+#purplebox("Sinusoid through FIR", [
+  - Multiply the amplitude with the magnitude of the frequency response
+  - add the angle of the frequency response to the phase
+  $
+    x[n] &= A cos(hat(omega)_1 n + phi) \
+    => y[n] &= A |H(e^(i hat(omega)_1))| cos(hat(omega)_1 n + phi + angle H(e^(i hat(omega)_1)))
+  $
+])
+
+#yellowbox("Superposition", [
+  $
+    x[n] &= X_0 + sum_(k = 1)^N |X_k| cos(hat(omega)_k n + angle X_k) \
+    &= X_0 + sum_(k = 1)^N (
+      H(e^(i hat(omega)_k)) X_k/2 e^(i hat(omega)_k) + H(e^(-i hat(omega)_k)) X^*_k/2 e^(-i hat(omega)_k)
+    )
+  $
+])
+
+LTI systems are completely characterized by impulse response or frequency response
+
+#Examplebox([
+  *unit delay* 
+  $
+    y[n] = x[n-1] \ 
+    b_k = {0, 1} \
+    H(e^(i hat(omega))) = sum_(k = 0)^M b_k e^(-i hat(omega) k) = e^(-i hat(omega))
+  $
+
+  *First difference*
+  $
+    b_k = {1, -1} \
+    H(e^(i hat(omega))) = sum_(k = 0)^M b_k e^(-i hat(omega) k) = 1 - e^(-i hat(omega))
+  $
+])
